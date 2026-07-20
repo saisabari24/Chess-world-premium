@@ -1,0 +1,6 @@
+{
+  "name": "Chess World",
+  "description": "Premium landing page for Chess World, an elite chess academy and event brand.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
