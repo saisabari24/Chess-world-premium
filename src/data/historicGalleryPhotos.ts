@@ -295,65 +295,109 @@ const SVG_6 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" wid
   <text x="55" y="545" font-family="monospace" font-size="15" fill="#f59e0b" font-weight="bold">INDIA MAP SHIELD CHAMPIONSHIP AWARD</text>
 </svg>`;
 
-export const HISTORIC_PHOTOS: GalleryItem[] = [
+export const HISTORIC_BASE_PHOTOS: GalleryItem[] = [
   {
     id: 'cw-archive-1',
-    title: 'Founding Mentor & Dr. Sai',
+    title: '',
     imageUrl: '/gallery/photo1.jpg',
     fallbackUrl: createSvgUrl(SVG_1),
-    caption: 'Founding mentor with dark red rose garland in the center, Dr. Sai in blue/yellow shirt on the right, and senior academy member on the left. Hosur Headquarters inception photograph (1994).',
-    location: 'Hosur Headquarters',
-    date: 'Est. 1994',
     rotation: 0
   },
   {
     id: 'cw-archive-2',
-    title: 'State Championship Trophy Presentation',
+    title: '',
     imageUrl: '/gallery/photo2.jpg',
     fallbackUrl: createSvgUrl(SVG_2),
-    caption: 'State Championship prize distribution ceremony with dozens of golden trophies lined up on stage. Dr. Sai handing championship awards to rising prodigies.',
-    location: 'Hosur Tournament Hall',
-    date: '1998 Championship',
     rotation: 0
   },
   {
     id: 'cw-archive-3',
-    title: 'Academy Mentors on Heritage Swing',
+    title: '',
     imageUrl: '/gallery/photo3.jpg',
     fallbackUrl: createSvgUrl(SVG_3),
-    caption: 'Dr. Sai and senior academy faculty seated on the traditional wooden swing (jhula) at the original Chess World training lodge in Hosur.',
-    location: 'Hosur HQ Lodge',
-    date: 'Circa 1996',
     rotation: 0
   },
   {
     id: 'cw-archive-4',
-    title: 'Chennai District Championship Award',
+    title: '',
     imageUrl: '/gallery/photo4.jpg',
     fallbackUrl: createSvgUrl(SVG_4),
-    caption: 'Dr. Sai in formal grey suit presenting the Chennai District Chess Association championship award to young district champions.',
-    location: 'Chennai District Arena',
-    date: '2001 Championship',
     rotation: 0
   },
   {
     id: 'cw-archive-5',
-    title: 'India Map Shield Trophy Presentation',
+    title: '',
     imageUrl: '/gallery/photo5.jpg',
     fallbackUrl: createSvgUrl(SVG_5),
-    caption: 'Chief guest and Dr. Sai presenting the carved wooden India Map Trophy Shield to victorious junior chess teams.',
-    location: 'Regional Championship',
-    date: '2003 Event',
     rotation: 0
   },
   {
     id: 'cw-archive-6',
-    title: 'Chess World Academy Champions',
+    title: '',
     imageUrl: '/gallery/photo6.jpg',
     fallbackUrl: createSvgUrl(SVG_6),
-    caption: 'Chess World group photo in front of the official academy backdrop banner, honoring student champions wearing gold medals and holding trophies.',
-    location: 'Chess World Hub',
-    date: '2005 Tournament',
     rotation: 0
   }
 ];
+
+// Vite Glob import for images in /public/gallery/ and /public/
+const galleryGlob = (import.meta as any).glob('/public/gallery/*.{png,jpg,jpeg,webp,PNG,JPG,JPEG,WEBP,gif,GIF,svg,SVG}', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+});
+
+const publicGlob = (import.meta as any).glob('/public/*.{png,jpg,jpeg,webp,PNG,JPG,JPEG,WEBP,gif,GIF}', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+});
+
+export function getDiscoveredPhotos(): GalleryItem[] {
+  const photos: GalleryItem[] = [];
+  const seenUrls = new Set<string>();
+
+  const addPhoto = (rawUrl: string, fallbackUrl?: string) => {
+    if (!rawUrl) return;
+    let cleanUrl = rawUrl;
+    if (cleanUrl.startsWith('/public/')) {
+      cleanUrl = cleanUrl.replace('/public', '');
+    }
+    if (seenUrls.has(cleanUrl)) return;
+
+    const lower = cleanUrl.toLowerCase();
+    if (lower.includes('logo') || lower.includes('favicon') || lower.includes('readme')) return;
+
+    seenUrls.add(cleanUrl);
+    photos.push({
+      id: `photo-${photos.length + 1}`,
+      title: '',
+      imageUrl: cleanUrl,
+      fallbackUrl: fallbackUrl,
+      rotation: 0
+    });
+  };
+
+  // 1. Add files from /public/gallery/
+  for (const [path, moduleVal] of Object.entries(galleryGlob)) {
+    const url = typeof moduleVal === 'string' ? moduleVal : (moduleVal as { default?: string })?.default || path.replace('/public', '');
+    addPhoto(url);
+  }
+
+  // 2. Add files from /public/
+  for (const [path, moduleVal] of Object.entries(publicGlob)) {
+    const url = typeof moduleVal === 'string' ? moduleVal : (moduleVal as { default?: string })?.default || path.replace('/public', '');
+    addPhoto(url);
+  }
+
+  // 3. Fallback to base historic photos if none or to ensure base gallery renders
+  HISTORIC_BASE_PHOTOS.forEach((item) => {
+    if (!seenUrls.has(item.imageUrl)) {
+      addPhoto(item.imageUrl, item.fallbackUrl);
+    }
+  });
+
+  return photos;
+}
+
+export const HISTORIC_PHOTOS: GalleryItem[] = getDiscoveredPhotos();
