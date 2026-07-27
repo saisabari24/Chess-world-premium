@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Maximize2, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
+import { X, Maximize2, ChevronLeft, ChevronRight, RotateCw, Image as ImageIcon } from 'lucide-react';
 import { HISTORIC_PHOTOS } from '../data/historicGalleryPhotos';
 
 export interface GalleryItem {
   id: string;
-  title: string;
+  title?: string;
   imageUrl: string;
   fallbackUrl?: string;
   caption?: string;
@@ -24,16 +24,10 @@ export const GallerySection: React.FC = () => {
 
     async function checkManifest() {
       try {
-        // Fetch with cache-busting timestamp so updates to manifest.json reflect immediately
         const res = await fetch(`/gallery/manifest.json?t=${Date.now()}`);
         if (!res.ok) return;
         const data = await res.json();
         if (!data || !Array.isArray(data.photos) || !isMounted) return;
-
-        const baseFallbackMap = new Map<string, string | undefined>();
-        HISTORIC_PHOTOS.forEach((p) => {
-          if (p.fallbackUrl) baseFallbackMap.set(p.imageUrl, p.fallbackUrl);
-        });
 
         const manifestItems: GalleryItem[] = [];
         const seenUrls = new Set<string>();
@@ -54,7 +48,6 @@ export const GallerySection: React.FC = () => {
 
           if (!rawUrl) return;
 
-          // Normalize path: e.g. "photo1.jpg" -> "/gallery/photo1.jpg"
           let cleanUrl = rawUrl;
           if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('http')) {
             cleanUrl = `/gallery/${cleanUrl}`;
@@ -68,7 +61,6 @@ export const GallerySection: React.FC = () => {
             title,
             caption,
             imageUrl: cleanUrl,
-            fallbackUrl: baseFallbackMap.get(cleanUrl),
             rotation: 0,
           });
         });
@@ -80,7 +72,7 @@ export const GallerySection: React.FC = () => {
           });
         }
       } catch {
-        // ignore if manifest missing or unparseable
+        // ignore if manifest missing
       }
     }
 
@@ -91,7 +83,6 @@ export const GallerySection: React.FC = () => {
     };
   }, []);
 
-  // Scroll container ref
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleRotate = (id: string, e?: React.MouseEvent) => {
@@ -131,7 +122,7 @@ export const GallerySection: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> Rxf7+ — VISUAL ARCHIVES
+              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> VISUAL ARCHIVES
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-white">
               Chess World Gallery
@@ -141,76 +132,83 @@ export const GallerySection: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start md:self-auto">
-            {/* Scroll Navigation Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => scroll('left')}
-                aria-label="Scroll left"
-                className="p-3 rounded-full bg-white/5 border border-white/10 text-white hover:border-cw-gold hover:text-cw-gold transition-all duration-300"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll('right')}
-                aria-label="Scroll right"
-                className="p-3 rounded-full bg-white/5 border border-white/10 text-white hover:border-cw-gold hover:text-cw-gold transition-all duration-300"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Horizontal Scroll Gallery Container */}
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-6 overflow-x-auto pb-6 pt-2 scrollbar-none snap-x snap-mandatory focus:outline-none"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {items.map((item) => (
-            <motion.div
-              key={item.id}
-              onClick={() => setSelectedItem(item)}
-              className="snap-start shrink-0 w-[280px] sm:w-[340px] md:w-[380px] group bg-cw-charcoal/80 border border-white/10 rounded-3xl overflow-hidden cursor-pointer hover:border-cw-gold/50 transition-all duration-500 shadow-xl"
-            >
-              {/* Photo View */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-black/60 flex items-center justify-center">
-                <img
-                  src={item.imageUrl}
-                  alt="Chess World Photo"
-                  loading="lazy"
-                  style={{
-                    transform: item.rotation ? `rotate(${item.rotation}deg)` : undefined,
-                    transition: 'transform 0.4s ease'
-                  }}
-                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    if (item.fallbackUrl && img.src !== item.fallbackUrl) {
-                      img.src = item.fallbackUrl;
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-cw-dark/60 via-transparent to-transparent opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
-
-                {/* Card Quick Rotate button */}
+          {items.length > 0 && (
+            <div className="flex items-center gap-3 self-start md:self-auto">
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={(e) => handleRotate(item.id, e)}
-                  title="Rotate photo 90°"
-                  className="absolute top-4 left-4 p-2.5 rounded-full bg-cw-dark/80 backdrop-blur-md border border-white/15 text-white hover:text-cw-gold opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+                  onClick={() => scroll('left')}
+                  aria-label="Scroll left"
+                  className="p-3 rounded-full bg-white/5 border border-white/10 text-white hover:border-cw-gold hover:text-cw-gold transition-all duration-300"
                 >
-                  <RotateCw className="w-4 h-4 text-cw-gold" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
-
-                {/* Hover zoom icon */}
-                <div className="absolute top-4 right-4 p-2.5 rounded-full bg-cw-dark/70 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
-                  <Maximize2 className="w-4 h-4 text-cw-gold" />
-                </div>
+                <button
+                  onClick={() => scroll('right')}
+                  aria-label="Scroll right"
+                  className="p-3 rounded-full bg-white/5 border border-white/10 text-white hover:border-cw-gold hover:text-cw-gold transition-all duration-300"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
-            </motion.div>
-          ))}
+            </div>
+          )}
         </div>
+
+        {/* Gallery Content */}
+        {items.length === 0 ? (
+          <div className="p-12 rounded-3xl bg-cw-charcoal/60 border border-white/10 text-center flex flex-col items-center justify-center max-w-2xl mx-auto my-6">
+            <div className="w-16 h-16 rounded-2xl bg-cw-gold/10 border border-cw-gold/20 flex items-center justify-center text-cw-gold mb-4">
+              <ImageIcon className="w-8 h-8" />
+            </div>
+            <h3 className="font-display text-xl font-bold text-white mb-2">No Gallery Photos Yet</h3>
+            <p className="text-gray-400 text-sm max-w-md font-light leading-relaxed">
+              Place any photo files inside the <code className="text-cw-gold bg-black/40 px-2 py-0.5 rounded text-xs font-mono">/public/gallery/</code> folder or add their paths to <code className="text-cw-gold bg-black/40 px-2 py-0.5 rounded text-xs font-mono">/public/gallery/manifest.json</code> to display them here automatically.
+            </p>
+          </div>
+        ) : (
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-6 overflow-x-auto pb-6 pt-2 scrollbar-none snap-x snap-mandatory focus:outline-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {items.map((item) => (
+              <motion.div
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="snap-start shrink-0 w-[280px] sm:w-[340px] md:w-[380px] group bg-cw-charcoal/80 border border-white/10 rounded-3xl overflow-hidden cursor-pointer hover:border-cw-gold/50 transition-all duration-500 shadow-xl"
+              >
+                {/* Photo View */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-black/60 flex items-center justify-center">
+                  <img
+                    src={item.imageUrl}
+                    alt="Chess World Photo"
+                    loading="lazy"
+                    style={{
+                      transform: item.rotation ? `rotate(${item.rotation}deg)` : undefined,
+                      transition: 'transform 0.4s ease'
+                    }}
+                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-cw-dark/60 via-transparent to-transparent opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
+
+                  {/* Card Quick Rotate button */}
+                  <button
+                    onClick={(e) => handleRotate(item.id, e)}
+                    title="Rotate photo 90°"
+                    className="absolute top-4 left-4 p-2.5 rounded-full bg-cw-dark/80 backdrop-blur-md border border-white/15 text-white hover:text-cw-gold opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+                  >
+                    <RotateCw className="w-4 h-4 text-cw-gold" />
+                  </button>
+
+                  {/* Hover zoom icon */}
+                  <div className="absolute top-4 right-4 p-2.5 rounded-full bg-cw-dark/70 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110">
+                    <Maximize2 className="w-4 h-4 text-cw-gold" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Lightbox Modal */}
         <AnimatePresence>
@@ -247,12 +245,6 @@ export const GallerySection: React.FC = () => {
                       transition: 'transform 0.4s ease'
                     }}
                     className="w-full h-full object-contain max-h-[75vh]"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement;
-                      if (selectedItem.fallbackUrl && img.src !== selectedItem.fallbackUrl) {
-                        img.src = selectedItem.fallbackUrl;
-                      }
-                    }}
                   />
 
                   {/* Lightbox Rotate Control */}
@@ -271,4 +263,3 @@ export const GallerySection: React.FC = () => {
     </section>
   );
 };
-
