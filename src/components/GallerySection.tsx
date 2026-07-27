@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
 import { HISTORIC_PHOTOS } from '../data/historicGalleryPhotos';
@@ -17,6 +17,53 @@ export interface GalleryItem {
 export const GallerySection: React.FC = () => {
   const [items, setItems] = useState<GalleryItem[]>(HISTORIC_PHOTOS);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+
+  // Optional runtime manifest fetcher for post-build dynamic photo additions
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkManifest() {
+      try {
+        const res = await fetch('/gallery/manifest.json');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data.photos) || !isMounted) return;
+
+        const manifestUrls: string[] = data.photos
+          .filter((p: unknown): p is string => typeof p === 'string' && p.trim().length > 0)
+          .map((p: string) => p.trim());
+
+        if (manifestUrls.length === 0) return;
+
+        setItems((prev) => {
+          const existingUrls = new Set(prev.map((item) => item.imageUrl));
+          const newItems: GalleryItem[] = [];
+
+          manifestUrls.forEach((url, idx) => {
+            if (!existingUrls.has(url)) {
+              newItems.push({
+                id: `manifest-${idx}-${Date.now()}`,
+                title: '',
+                imageUrl: url,
+                rotation: 0,
+              });
+            }
+          });
+
+          if (newItems.length === 0) return prev;
+          return [...prev, ...newItems];
+        });
+      } catch {
+        // ignore if manifest missing or unparseable
+      }
+    }
+
+    checkManifest();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Scroll container ref
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);

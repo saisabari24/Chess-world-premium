@@ -340,14 +340,14 @@ export const HISTORIC_BASE_PHOTOS: GalleryItem[] = [
   }
 ];
 
-// Vite Glob import for images in /public/gallery/ and /public/
-const galleryGlob = (import.meta as any).glob('/public/gallery/*.{png,jpg,jpeg,webp,PNG,JPG,JPEG,WEBP,gif,GIF,svg,SVG}', {
+// Vite Glob import for ALL images in /public/gallery/ and /public/ without naming constraints
+const galleryGlob = (import.meta as any).glob('/public/gallery/**/*', {
   eager: true,
   query: '?url',
   import: 'default'
 });
 
-const publicGlob = (import.meta as any).glob('/public/*.{png,jpg,jpeg,webp,PNG,JPG,JPEG,WEBP,gif,GIF}', {
+const publicGlob = (import.meta as any).glob('/public/*.{png,jpg,jpeg,webp,PNG,JPG,JPEG,WEBP,gif,GIF,svg,SVG}', {
   eager: true,
   query: '?url',
   import: 'default'
@@ -366,7 +366,8 @@ export function getDiscoveredPhotos(): GalleryItem[] {
     if (seenUrls.has(cleanUrl)) return;
 
     const lower = cleanUrl.toLowerCase();
-    if (lower.includes('logo') || lower.includes('favicon') || lower.includes('readme')) return;
+    // Exclude system/manifest/metadata files and logos
+    if (lower.endsWith('.md') || lower.endsWith('.json') || lower.endsWith('.txt') || lower.includes('logo') || lower.includes('favicon')) return;
 
     seenUrls.add(cleanUrl);
     photos.push({
@@ -378,19 +379,19 @@ export function getDiscoveredPhotos(): GalleryItem[] {
     });
   };
 
-  // 1. Add files from /public/gallery/
+  // 1. Add all files in /public/gallery/ (regardless of filename)
   for (const [path, moduleVal] of Object.entries(galleryGlob)) {
     const url = typeof moduleVal === 'string' ? moduleVal : (moduleVal as { default?: string })?.default || path.replace('/public', '');
     addPhoto(url);
   }
 
-  // 2. Add files from /public/
+  // 2. Add files in /public/
   for (const [path, moduleVal] of Object.entries(publicGlob)) {
     const url = typeof moduleVal === 'string' ? moduleVal : (moduleVal as { default?: string })?.default || path.replace('/public', '');
     addPhoto(url);
   }
 
-  // 3. Fallback to base historic photos if none or to ensure base gallery renders
+  // 3. Include base historic SVG fallbacks if needed
   HISTORIC_BASE_PHOTOS.forEach((item) => {
     if (!seenUrls.has(item.imageUrl)) {
       addPhoto(item.imageUrl, item.fallbackUrl);
