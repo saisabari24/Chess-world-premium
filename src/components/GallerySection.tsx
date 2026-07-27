@@ -18,41 +18,67 @@ export const GallerySection: React.FC = () => {
   const [items, setItems] = useState<GalleryItem[]>(HISTORIC_PHOTOS);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
-  // Optional runtime manifest fetcher for post-build dynamic photo additions
+  // Runtime manifest fetcher for post-build dynamic photo additions
   useEffect(() => {
     let isMounted = true;
 
     async function checkManifest() {
       try {
-        const res = await fetch('/gallery/manifest.json');
+        // Fetch with cache-busting timestamp so updates to manifest.json reflect immediately
+        const res = await fetch(`/gallery/manifest.json?t=${Date.now()}`);
         if (!res.ok) return;
         const data = await res.json();
-        if (!Array.isArray(data.photos) || !isMounted) return;
+        if (!data || !Array.isArray(data.photos) || !isMounted) return;
 
-        const manifestUrls: string[] = data.photos
-          .filter((p: unknown): p is string => typeof p === 'string' && p.trim().length > 0)
-          .map((p: string) => p.trim());
-
-        if (manifestUrls.length === 0) return;
-
-        setItems((prev) => {
-          const existingUrls = new Set(prev.map((item) => item.imageUrl));
-          const newItems: GalleryItem[] = [];
-
-          manifestUrls.forEach((url, idx) => {
-            if (!existingUrls.has(url)) {
-              newItems.push({
-                id: `manifest-${idx}-${Date.now()}`,
-                title: '',
-                imageUrl: url,
-                rotation: 0,
-              });
-            }
-          });
-
-          if (newItems.length === 0) return prev;
-          return [...prev, ...newItems];
+        const baseFallbackMap = new Map<string, string | undefined>();
+        HISTORIC_PHOTOS.forEach((p) => {
+          if (p.fallbackUrl) baseFallbackMap.set(p.imageUrl, p.fallbackUrl);
         });
+
+        const manifestItems: GalleryItem[] = [];
+        const seenUrls = new Set<string>();
+
+        data.photos.forEach((p: unknown, idx: number) => {
+          let rawUrl = '';
+          let title = '';
+          let caption = '';
+
+          if (typeof p === 'string') {
+            rawUrl = p.trim();
+          } else if (p && typeof p === 'object' && p !== null && 'imageUrl' in p) {
+            const obj = p as { imageUrl?: string; title?: string; caption?: string };
+            rawUrl = obj.imageUrl?.trim() || '';
+            title = obj.title || '';
+            caption = obj.caption || '';
+          }
+
+          if (!rawUrl) return;
+
+          // Normalize path: e.g. "photo1.jpg" -> "/gallery/photo1.jpg"
+          let cleanUrl = rawUrl;
+          if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('http')) {
+            cleanUrl = `/gallery/${cleanUrl}`;
+          }
+
+          if (seenUrls.has(cleanUrl)) return;
+          seenUrls.add(cleanUrl);
+
+          manifestItems.push({
+            id: `manifest-${idx}-${cleanUrl}`,
+            title,
+            caption,
+            imageUrl: cleanUrl,
+            fallbackUrl: baseFallbackMap.get(cleanUrl),
+            rotation: 0,
+          });
+        });
+
+        if (manifestItems.length > 0 && isMounted) {
+          setItems((prev) => {
+            const extraPhotos = prev.filter((item) => !seenUrls.has(item.imageUrl));
+            return [...manifestItems, ...extraPhotos];
+          });
+        }
       } catch {
         // ignore if manifest missing or unparseable
       }
