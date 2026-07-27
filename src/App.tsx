@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Trophy, Users, Monitor, ChevronRight, Crown, Target, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowRight, Trophy, Users, Monitor, ChevronRight, Crown, Target, CheckCircle2, Loader2, Calendar } from 'lucide-react';
+import { GallerySection } from './components/GallerySection';
+import { UpcomingEventsSection } from './components/UpcomingEventsSection';
+import { ChessWorldLogo } from './components/ChessWorldLogo';
 
 export default function App() {
   const [activeRung, setActiveRung] = useState<number | null>(3);
@@ -15,29 +18,38 @@ export default function App() {
 
       <div className="relative z-10">
         {/* Navigation */}
-        <nav className="px-6 py-8 flex justify-between items-center max-w-7xl mx-auto">
-          <div className="font-display font-bold text-2xl tracking-tighter text-white flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-cw-gold to-yellow-600 rounded-lg shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-              <Crown className="w-6 h-6 text-cw-dark" />
-            </div>
-            CHESS WORLD
+        <nav className="px-6 py-4 flex justify-between items-center max-w-7xl mx-auto">
+          <ChessWorldLogo size="lg" />
+          <div className="flex items-center gap-3">
+            <a href="#events" className="px-6 py-3 bg-white/10 border border-cw-gold/30 text-cw-gold font-bold uppercase text-xs tracking-widest rounded-full hover:bg-cw-gold/20 transition-all duration-300 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-cw-gold" /> Upcoming Events
+            </a>
+            <a href="#contact" className="px-8 py-3 bg-cw-gold text-cw-dark font-bold uppercase text-xs tracking-widest rounded-full shadow-lg shadow-cw-gold/20 hover:bg-yellow-400 transition-all duration-300 hidden sm:block">
+              Contact Us
+            </a>
           </div>
-          <a href="#contact" className="px-8 py-3 bg-cw-gold text-cw-dark font-bold uppercase text-xs tracking-widest rounded-full shadow-lg shadow-cw-gold/20 hover:bg-yellow-400 transition-all duration-300 hidden sm:block">
-            Contact Us
-          </a>
         </nav>
 
         {/* Hero Section */}
-        <section className="py-20 md:py-32 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto mt-4">
+        <section className="pt-1 pb-12 flex flex-col items-center justify-center text-center px-4 max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="flex flex-col items-center"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-8">
+            {/* Official Logo Badge */}
+            <div className="mb-2 hover:scale-105 transition-transform duration-500 cursor-pointer p-0">
+              <img 
+                src="/logo.png" 
+                alt="Chess World Crest" 
+                className="w-64 h-auto sm:w-80 md:w-[22rem] lg:w-[26rem] filter drop-shadow-[0_10px_30px_rgba(212,175,55,0.45)] object-contain"
+              />
+            </div>
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-cw-gold animate-pulse" />
-              1. e4 — Est. 1994
+              1. e4 — EST. 1994
             </div>
             
             <h1 className="font-display text-5xl md:text-7xl lg:text-[7rem] font-black uppercase tracking-tighter leading-[0.9] mb-8">
@@ -46,7 +58,7 @@ export default function App() {
             </h1>
             
             <p className="text-lg md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed mb-12">
-              <strong className="text-white font-medium">Chess World</strong> is India's most experienced home-grown chess institution. 32 years of building grandmasters and engineering elite chess events.
+              <strong className="text-white font-medium">Chess World</strong> is India's most experienced home-grown chess institution. 33 years of building grandmasters and engineering elite chess events.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full sm:w-auto">
@@ -65,7 +77,7 @@ export default function App() {
           <div className="flex w-max animate-marquee">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex items-center space-x-4 px-2 text-cw-dark font-black tracking-widest uppercase text-xs md:text-sm whitespace-nowrap">
-                <span>★ 32 YEARS OF EXCELLENCE</span>
+                <span>★ 33 YEARS OF EXCELLENCE</span>
                 <span>★ 300+ TOURNAMENTS ORGANIZED</span>
                 <span>★ FIDE & SAAC BACKED</span>
                 <span>★ GOVERNMENT SUPPORTED</span>
@@ -73,6 +85,9 @@ export default function App() {
             ))}
           </div>
         </section>
+
+        {/* Upcoming Events Section (Moved below Hero) */}
+        <UpcomingEventsSection />
 
         {/* Inclusion Section */}
         <section className="py-12 px-4 max-w-4xl mx-auto text-center relative">
@@ -83,7 +98,7 @@ export default function App() {
             className="relative z-10 p-4 md:p-8"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> 0-0 — CASTLING
+              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> b3 — INCLUSIVE CHESS
             </div>
             
             <h2 className="font-display text-4xl md:text-6xl font-medium tracking-tight mb-8">
@@ -106,6 +121,9 @@ export default function App() {
         <section className="py-32 px-4 max-w-7xl mx-auto">
           <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> c4 — THE LEGACY
+              </div>
               <h2 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-4">The Legacy</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-cw-gold to-transparent rounded-full" />
             </div>
@@ -123,7 +141,7 @@ export default function App() {
               className="md:col-span-2 md:row-span-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col justify-end relative overflow-hidden group hover:border-white/20 transition-all duration-700 hover:shadow-2xl hover:shadow-cw-gold/5"
             >
               <div className="absolute top-0 right-0 p-8 opacity-10 font-black text-9xl md:text-[12rem] transition-all duration-700 text-white pointer-events-none leading-none">
-                32
+                33
               </div>
               <div className="relative z-20 h-full flex flex-col justify-end">
                 <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-cw-gold/10 text-cw-gold font-mono text-sm tracking-widest uppercase mb-6 w-fit border border-cw-gold/20">
@@ -136,8 +154,8 @@ export default function App() {
                     A visionary in Indian chess. Dr. Sai has dedicated over three decades to building the next generation of Grandmasters, combining psychological resilience with rigorous analytical training to unlock the true potential in every student.
                   </p>
                   <ul className="space-y-4 text-gray-300 font-light text-lg">
-                    <li className="flex items-center gap-3"><ChevronRight className="w-5 h-5 text-cw-gold"/> FIDE National Arbiter</li>
-                    <li className="flex items-center gap-3"><ChevronRight className="w-5 h-5 text-cw-gold"/> FIDE Coach</li>
+                    <li className="flex items-center gap-3"><ChevronRight className="w-5 h-5 text-cw-gold"/> National Arbiter</li>
+                    <li className="flex items-center gap-3"><ChevronRight className="w-5 h-5 text-cw-gold"/> Coach</li>
                     <li className="flex items-center gap-3"><ChevronRight className="w-5 h-5 text-cw-gold"/> 1995 Best Coach Award Winner</li>
                   </ul>
                 </div>
@@ -205,7 +223,7 @@ export default function App() {
         <section className="py-20 px-4 max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> Nf3 — Development
+              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> Nf3 — DEVELOPMENT
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold mb-4">The Coaching Pathway</h2>
             <p className="text-gray-400 font-light text-base md:text-lg max-w-2xl mx-auto">
@@ -267,7 +285,7 @@ export default function App() {
             <div className="grid lg:grid-cols-2 gap-16 items-center relative z-10">
               <div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-8">
-                  <Target className="w-4 h-4" /> Vision 2030
+                  <Target className="w-4 h-4" /> d4 — STRATEGIC ROADMAP
                 </div>
                 <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 leading-tight">Strategic <br/>Roadmap</h2>
                 <p className="text-gray-400 text-lg font-light leading-relaxed mb-10">
@@ -346,9 +364,15 @@ export default function App() {
           </div>
         </section>
 
+        {/* Gallery Section */}
+        <GallerySection />
+
         {/* Testimonials */}
         <section className="py-24 px-4 max-w-7xl mx-auto">
           <div className="mb-16 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> Qxd5 — CHAMPION TESTIMONIALS
+            </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">What Our Champions Say</h2>
             <div className="w-16 h-1 bg-cw-gold mx-auto" />
           </div>
@@ -374,6 +398,9 @@ export default function App() {
         <section id="contact" className="py-24 px-4 max-w-4xl mx-auto relative mb-12">
           <div className="bg-gradient-to-br from-cw-charcoal to-[#0d121c] border border-white/10 rounded-[3rem] p-10 md:p-16 relative overflow-hidden shadow-2xl text-center">
             <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> 1-0 — CHECKMATE / CONTACT
+              </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">Ready to Make Your Move?</h2>
               <p className="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">
                 Whether you're looking to enroll in our academy, partner for a corporate event, or learn more about our inclusion programs, our team is ready to assist you.
@@ -392,14 +419,16 @@ export default function App() {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-white/10 py-6 px-10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] uppercase tracking-widest text-gray-500 bg-cw-dark">
-          <div className="text-center md:text-left">
+        <footer className="border-t border-white/10 py-8 px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] uppercase tracking-widest text-gray-400 bg-cw-dark">
+          <ChessWorldLogo size="sm" showText={true} />
+          
+          <div className="text-center md:text-left font-mono">
             HQ: HOSUR | ELECTRONIC CITY, BENGALURU | TAMBARAM, CHENNAI
           </div>
           
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-            <a href="tel:9282301111" className="hover:text-white transition-colors">+91 92823 01111</a>
-            <a href="mailto:office@chessworldindia.com" className="hover:text-white transition-colors">OFFICE@CHESSWORLDINDIA.COM</a>
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 font-mono">
+            <a href="tel:9282301111" className="hover:text-cw-gold transition-colors">+91 92823 01111</a>
+            <a href="mailto:office@chessworldindia.com" className="hover:text-cw-gold transition-colors">OFFICE@CHESSWORLDINDIA.COM</a>
           </div>
           
           <div className="font-bold text-white">&copy; {new Date().getFullYear()} CHESS WORLD EST. 1994</div>
