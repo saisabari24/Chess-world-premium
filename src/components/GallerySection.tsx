@@ -41,7 +41,8 @@ export const GallerySection: React.FC = () => {
     setEventsLoading(true);
     setEventsError(false);
     try {
-      const res = await fetch('https://gallery.chessworldindia.com/');
+      const baseUrl = import.meta.env.DEV ? '/api/gallery' : 'https://gallery.chessworldindia.com/';
+      const res = await fetch(baseUrl);
       if (!res.ok) throw new Error('Failed to fetch events');
       const contentType = res.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -68,7 +69,8 @@ export const GallerySection: React.FC = () => {
       setLoadingDetails((prev) => ({ ...prev, [slug]: true }));
       setErrorDetails((prev) => ({ ...prev, [slug]: false }));
       try {
-        const res = await fetch(`https://gallery.chessworldindia.com/?event=${slug}`);
+        const baseUrl = import.meta.env.DEV ? `/api/gallery?event=${slug}` : `https://gallery.chessworldindia.com/?event=${slug}`;
+        const res = await fetch(baseUrl);
         if (!res.ok) throw new Error('Failed to fetch event details');
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {

@@ -14,6 +14,13 @@ export default defineConfig(() => {
     server: {
       host: '0.0.0.0',
       port: 3000,
+      proxy: {
+        '/api/gallery': {
+          target: 'https://gallery.chessworldindia.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/gallery/, ''),
+        },
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
