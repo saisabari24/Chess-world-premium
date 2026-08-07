@@ -86,36 +86,8 @@ export default function App() {
           </div>
         </section>
 
-        {/* Upcoming Events Section (Moved below Hero) */}
-        <UpcomingEventsSection />
-
-        {/* Inclusion Section */}
-        <section className="py-12 px-4 max-w-4xl mx-auto text-center relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative z-10 p-4 md:p-8"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> b3 — INCLUSIVE CHESS
-            </div>
-            
-            <h2 className="font-display text-4xl md:text-6xl font-medium tracking-tight mb-8">
-              Chess belongs to every mind.
-            </h2>
-            
-            <div className="w-24 h-[1px] bg-cw-gold/50 mx-auto mb-10" />
-            
-            <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto mb-12">
-              At Chess World, we believe the board is a great equaliser. We are proud of our distinctive, long-running work pioneering coaching at institutions serving differently-abled students. We adapt our teaching, provide the right support, and focus on the intellectual capability of every child.
-            </p>
-            
-            <button className="px-8 py-3 border border-white/20 text-gray-300 font-mono uppercase text-xs tracking-widest rounded-full hover:bg-white/5 hover:text-white transition-all duration-300">
-              INCLUSION & SUPPORT COACHING
-            </button>
-          </motion.div>
-        </section>
+        {/* Gallery Section */}
+        <GallerySection />
 
         {/* The Legacy - Bento Box Grid */}
         <section className="py-32 px-4 max-w-7xl mx-auto">
@@ -364,9 +336,38 @@ export default function App() {
           </div>
         </section>
 
-        {/* Gallery Section */}
-        <GallerySection />
+        {/* Upcoming Events Section (Moved below Hero) */}
+        <UpcomingEventsSection />
 
+        {/* Inclusion Section */}
+        <section className="py-12 px-4 max-w-4xl mx-auto text-center relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative z-10 p-4 md:p-8"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cw-gold/10 border border-cw-gold/30 text-cw-gold text-xs font-mono uppercase tracking-widest mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-cw-gold" /> b3 — INCLUSIVE CHESS
+            </div>
+            
+            <h2 className="font-display text-4xl md:text-6xl font-medium tracking-tight mb-8">
+              Chess belongs to every mind.
+            </h2>
+            
+            <div className="w-24 h-[1px] bg-cw-gold/50 mx-auto mb-10" />
+            
+            <p className="text-xl md:text-2xl text-gray-400 font-light leading-relaxed max-w-3xl mx-auto mb-12">
+              At Chess World, we believe the board is a great equaliser. We are proud of our distinctive, long-running work pioneering coaching at institutions serving differently-abled students. We adapt our teaching, provide the right support, and focus on the intellectual capability of every child.
+            </p>
+            
+            <button className="px-8 py-3 border border-white/20 text-gray-300 font-mono uppercase text-xs tracking-widest rounded-full hover:bg-white/5 hover:text-white transition-all duration-300">
+              INCLUSION & SUPPORT COACHING
+            </button>
+          </motion.div>
+        </section>
+
+        
         {/* Testimonials */}
         <section className="py-24 px-4 max-w-7xl mx-auto">
           <div className="mb-16 text-center">
@@ -380,11 +381,14 @@ export default function App() {
             {[
               { text: "Chess World transformed my approach to the game. The analytical rigor and tournament exposure here is unmatched in India.", author: "Arjun K.", title: "Academy Student" },
               { text: "The coaches don't just teach openings; they build psychological resilience. The Grassroots Pathway is a brilliantly structured program.", author: "Priya S.", title: "Parent" },
-              { text: "Organizing our corporate league with Chess World was flawless. Their professional production elevated the entire experience.", author: "Vikram R.", title: "Corporate Sponsor" }
+              { text: "Organizing our corporate league with Chess World was flawless. Their professional production elevated the entire experience.", author: "Vikram R.", title: "Corporate Sponsor" },
+              { text: "Chess World has been instrumental in cultivating young talent and promoting intellectual sportsmanship within our community. Their dedication to organizing high-caliber tournaments in Hosur is truly commendable.", author: "S. A. Sathya", title: "Hon'ble Mayor, Hosur" },
+              { text: "Chess World conducted the Krishnagiri District Tournament in an incredibly successful and grand manner. The professionalism, flawless execution, and attention to detail provided our students with an unforgettable experience.", author: "Principal", title: "Brundavan School, Hosur" },
+              { text: "The scale and organization of the district championship were mind-blowing. Seeing my child compete in such a well-structured, professional arena gives me immense confidence in their journey.", author: "Ramesh M.", title: "Tournament Parent" }
             ].map((testi, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors">
+              <div key={i} className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors flex flex-col">
                 <div className="text-cw-gold text-4xl font-serif mb-4">"</div>
-                <p className="text-gray-300 font-light leading-relaxed mb-6 italic">{testi.text}</p>
+                <p className="text-gray-300 font-light leading-relaxed mb-6 italic flex-grow">{testi.text}</p>
                 <div>
                   <div className="font-bold text-white">{testi.author}</div>
                   <div className="text-xs text-cw-gold uppercase tracking-wider">{testi.title}</div>
