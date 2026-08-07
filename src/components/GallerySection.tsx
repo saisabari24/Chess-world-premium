@@ -25,6 +25,89 @@ interface EventDetailResponse {
   images: ImageItem[];
 }
 
+const isVideo = (filename: string) => {
+  const lower = filename.toLowerCase();
+  return (
+    lower.endsWith('.mp4') || 
+    lower.endsWith('.mov') || 
+    lower.endsWith('.webm') ||
+    lower.endsWith('.mkv') ||
+    lower.endsWith('.avi') ||
+    lower.endsWith('.m4v') ||
+    lower.endsWith('.ogv') ||
+    lower.endsWith('.wmv')
+  );
+};
+
+const EventGridItem: React.FC<{ event: EventListItem; onClick: () => void }> = ({ event, onClick }) => {
+  const [details, setDetails] = useState<EventDetailResponse | null>(null);
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        const baseUrl = import.meta.env.DEV ? `/api/gallery?event=${event.slug}` : `https://gallery.chessworldindia.com/?event=${event.slug}`;
+        const res = await fetch(baseUrl);
+        if (!res.ok) return;
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) return;
+        const data = await res.json();
+        setDetails(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchDetails();
+  }, [event.slug]);
+
+  const images = details?.images?.filter(item => !isVideo(item.name)).slice(0, 3) || [];
+
+  return (
+    <button
+      onClick={onClick}
+      className="group relative aspect-square bg-cw-charcoal/60 border border-white/10 rounded-3xl overflow-hidden hover:border-cw-gold/50 transition-all flex flex-col justify-end text-left shadow-lg hover:shadow-cw-gold/10"
+    >
+      {images.length > 0 && (
+        <div className="absolute inset-0 z-0 flex items-center justify-center p-4">
+          {images.map((img, idx) => {
+             const rotations = [0, -10, 10];
+             const zIndexes = [10, 5, 0];
+             return (
+               <div
+                 key={img.key}
+                 className="absolute w-[80%] h-[80%] rounded-2xl overflow-hidden border-4 border-white/10 shadow-2xl transition-all duration-700 group-hover:scale-105"
+                 style={{ 
+                   transform: `rotate(${rotations[idx] || 0}deg)`,
+                   zIndex: zIndexes[idx] || 0
+                 }}
+               >
+                 <img 
+                   src={`https://media.chessworldindia.com/${img.key}`}
+                   alt={event.title}
+                   className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                 />
+               </div>
+             );
+          })}
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-cw-dark/95 via-cw-dark/50 to-transparent z-10" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 text-cw-gold z-20 pointer-events-none">
+         <div className="bg-black/40 p-4 rounded-full backdrop-blur-md mb-4 transform scale-50 group-hover:scale-100 transition-transform duration-500">
+           <ImageIcon className="w-8 h-8 drop-shadow-lg" />
+         </div>
+         <span className="bg-cw-gold text-cw-dark px-4 py-2 rounded-full font-bold text-xs uppercase tracking-widest shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">Open Gallery</span>
+      </div>
+      
+      <div className="relative z-30 p-6 transform translate-y-0 group-hover:-translate-y-2 transition-transform duration-500">
+        <p className="text-cw-gold/80 text-xs font-mono mb-2 drop-shadow-md">{new Date(event.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <h3 className="font-display text-xl md:text-2xl font-bold text-white leading-tight drop-shadow-lg">
+          {event.title}
+        </h3>
+      </div>
+    </button>
+  );
+};
+
 export const GallerySection: React.FC = () => {
   const [events, setEvents] = useState<EventListItem[] | null>(null);
   const [eventsLoading, setEventsLoading] = useState(true);
@@ -126,11 +209,6 @@ export const GallerySection: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxState, navigateLightbox]);
 
-  const isVideo = (filename: string) => {
-    const lower = filename.toLowerCase();
-    return lower.endsWith('.mp4') || lower.endsWith('.mov') || lower.endsWith('.webm');
-  };
-
   return (
     <section className="py-20 px-4 max-w-7xl mx-auto relative overflow-hidden" id="gallery">
       {/* Background ambient glow */}
@@ -180,24 +258,7 @@ export const GallerySection: React.FC = () => {
               ) : events && events.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {events.map((event) => (
-                    <button
-                      key={event.slug}
-                      onClick={() => openEvent(event.slug)}
-                      className="group relative aspect-square bg-cw-charcoal/60 border border-white/10 rounded-3xl overflow-hidden hover:border-cw-gold/50 transition-all flex flex-col justify-end text-left shadow-lg hover:shadow-cw-gold/10"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-cw-dark/90 via-cw-dark/40 to-transparent z-10" />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-20 group-hover:opacity-100 transition-all group-hover:scale-110 duration-500 text-cw-gold">
-                         <ImageIcon className="w-16 h-16 mb-4" />
-                         <span className="bg-cw-gold text-cw-dark px-4 py-2 rounded-full font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">Click to Open Gallery</span>
-                      </div>
-                      
-                      <div className="relative z-20 p-6 group-hover:opacity-0 transition-opacity duration-300">
-                        <p className="text-cw-gold/80 text-xs font-mono mb-2">{new Date(event.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        <h3 className="font-display text-xl md:text-2xl font-bold text-white leading-tight">
-                          {event.title}
-                        </h3>
-                      </div>
-                    </button>
+                    <EventGridItem key={event.slug} event={event} onClick={() => openEvent(event.slug)} />
                   ))}
                 </div>
               ) : (
