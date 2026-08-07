@@ -43,6 +43,10 @@ export const GallerySection: React.FC = () => {
     try {
       const res = await fetch('/api/gallery');
       if (!res.ok) throw new Error('Failed to fetch events');
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Expected JSON response but received: ' + contentType);
+      }
       const data: EventListResponse = await res.json();
       setEvents(data.events || []);
     } catch (err) {
@@ -66,6 +70,10 @@ export const GallerySection: React.FC = () => {
       try {
         const res = await fetch(`/api/gallery/event/${slug}`);
         if (!res.ok) throw new Error('Failed to fetch event details');
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Expected JSON response but received: ' + contentType);
+        }
         const data: EventDetailResponse = await res.json();
         setEventDetails((prev) => ({ ...prev, [slug]: data }));
       } catch (err) {
